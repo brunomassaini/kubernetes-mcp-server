@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  kubernetes-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kubernetes-mcp-server:local
+    container_name: kubernetes-mcp-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    # Use your local kubeconfig; update the host path if it's in a different location
+    volumes:
+      # Use your host kubeconfig; ${HOME} expands before docker compose runs
+      - ${HOME}/.kube/config:/kube/config:ro
+      # Uncomment to pass a TOML config file or drop-ins
+      # - ./config.toml:/app/config.toml:ro
+      # - ./conf.d:/app/conf.d:ro
+    command:
+      - "--kubeconfig"
+      - "/kube/config"
+      # Expose additional flags here if needed, e.g. log level or toolset selection
+      # - "--log-level"
+      # - "4"

@@ -688,3 +688,28 @@ npx @modelcontextprotocol/inspector@latest $(pwd)/kubernetes-mcp-server
 ---
 
 mcp-name: io.github.containers/kubernetes-mcp-server
+
+### Deploying the server into Kubernetes (in-cluster auth)
+
+Manifests are provided in `k8s/` (one file per resource):
+- `k8s/sa.yaml` – ServiceAccount `kubernetes-mcp-server` (namespace: default).
+- `k8s/role-readonly.yaml` – ClusterRole with read-only verbs; contains a commented write variant if you later need mutating actions.
+- `k8s/rolebinding.yaml` – ClusterRoleBinding wiring the ServiceAccount to the ClusterRole (update to the write role if you switch).
+- `k8s/deployment.yaml` – Deployment running the server with `--read-only` and port 8080 (replace the image tag as needed).
+- `k8s/service.yaml` – ClusterIP Service on port 8080.
+
+Apply everything:
+```shell
+kubectl apply -f k8s/
+```
+
+Expose locally for testing:
+```shell
+kubectl port-forward svc/kubernetes-mcp-server 8080:8080
+```
+
+Inspect and exercise the MCP endpoints:
+```shell
+npx @modelcontextprotocol/inspector@latest http://localhost:8080/mcp
+```
+Suggested first calls in the inspector: `configuration_contexts_list` then `namespaces_list` to confirm API reachability and RBAC. Remove `--read-only` in `k8s/deployment.yaml` and switch the RoleBinding to the commented write ClusterRole if you need write operations.
